@@ -11,7 +11,7 @@
   <title>Historiska foton – Sommargatan Växjö</title>
 
   <script>
-    var APP_VERSION = '2026-07-16c';
+    var APP_VERSION = '2026-07-16d';
     (function () {
       try {
         fetch('version.json?t=' + Date.now(), { cache: 'no-store' })
@@ -114,7 +114,7 @@
     .step { width: 34px; height: 34px; border: none; border-radius: 8px;
             background: rgba(255,255,255,0.15); color: #fff; font-size: 1.1rem; cursor: pointer; }
     .trim-foot { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
-    #copy-btn { flex: 1; padding: 10px; border: none; border-radius: 10px; cursor: pointer;
+    #values-btn { flex: 1; padding: 10px; border: none; border-radius: 10px; cursor: pointer;
                 background: linear-gradient(90deg, #4a90d9, #6bb5ff); color: #fff; font-weight: bold; }
     #photo-sel { display: flex; align-items: center; gap: 8px; justify-content: center; margin-bottom: 6px; }
     #photo-sel .step { width: 30px; height: 30px; }
@@ -122,7 +122,6 @@
     .nudge { width: 40px; height: 40px; border: none; border-radius: 50%;
              background: rgba(255,255,255,0.15); color: #fff; font-size: 1.15rem; cursor: pointer; }
     #nudge-label { font-size: 0.78rem; color: #cfd6ff; min-width: 3.5em; text-align: center; }
-    #copy-hint { font-size: 0.72rem; color: #9fd8a0; text-align: center; min-height: 1em; margin-top: 4px; }
 
     #error-overlay {
       position: fixed; inset: 0; background: #1a1a2e; color: #fff;
@@ -139,6 +138,31 @@
       pointer-events: none;
     }
     #ios-hint small { color: #ffd93d; font-size: 0.8rem; }
+
+    /* Värde-ruta (skärmdumpsvänlig) */
+    #values-overlay {
+      position: fixed; inset: 0; z-index: 5000; background: rgba(10,10,25,0.93);
+      display: flex; align-items: center; justify-content: center; padding: 20px;
+    }
+    .vcard {
+      background: #14142a; color: #fff; border: 1px solid #3a3a5c; border-radius: 16px;
+      padding: 20px; width: 420px; max-width: 92vw; max-height: 88vh; overflow-y: auto;
+    }
+    .vcard h3 { margin: 0 0 12px; font-size: 1.1rem; color: #ffd93d; word-break: break-all; }
+    .vrow { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.08); font-size: 1.05rem; }
+    .vrow b { color: #6bb5ff; font-family: monospace; }
+    .vnote { font-size: 0.78rem; color: #9999bb; margin: 12px 0 6px; line-height: 1.4; }
+    .vnote code, .vcsv-label { color: #ffd93d; }
+    .vcsv-label { font-size: 0.78rem; margin-top: 6px; color: #9999bb; }
+    #val-csv { background: #0a0a18; border: 1px solid #3a3a5c; border-radius: 8px; padding: 10px;
+               font-size: 0.82rem; white-space: pre-wrap; word-break: break-all; color: #9fd8a0; margin: 4px 0 12px; }
+    .vbtns { display: flex; gap: 10px; }
+    .vbtns button { flex: 1; padding: 11px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
+    #val-copy { background: linear-gradient(90deg,#4a90d9,#6bb5ff); color: #fff; }
+    #val-close { background: rgba(255,255,255,0.15); color: #fff; }
+    #val-hint { font-size: 0.75rem; color: #9fd8a0; text-align: center; min-height: 1em; margin-top: 8px; }
+
     .hidden { display: none !important; }
   </style>
 </head>
@@ -179,6 +203,22 @@
     <a href="index.html">↺ Försök igen</a>
   </div>
 
+  <!-- Värde-ruta: ta en SKÄRMDUMP av denna i fält, värdena läses in i foton.csv sedan -->
+  <div id="values-overlay" class="hidden">
+    <div class="vcard">
+      <h3 id="val-title">–</h3>
+      <div id="val-list"></div>
+      <p class="vnote">Riktningsvärdet läggs till <code>HEADING_OFFSET</code>. Övriga värden = CSV-raden nedan.</p>
+      <div class="vcsv-label">CSV-rad till foton.csv:</div>
+      <pre id="val-csv"></pre>
+      <div class="vbtns">
+        <button id="val-copy">📋 Kopiera</button>
+        <button id="val-close">Stäng</button>
+      </div>
+      <div id="val-hint"></div>
+    </div>
+  </div>
+
   <div id="ui-overlay">
     <div id="mode-badge" class="hidden"></div>
     <div id="ui-top" class="hidden">
@@ -207,9 +247,8 @@
           <button class="nudge" id="nudge-left">◀</button>
           <span id="nudge-label">0°</span>
           <button class="nudge" id="nudge-right">▶</button>
-          <button id="copy-btn">📋 Kopiera CSV-rad</button>
+          <button id="values-btn">📸 Visa värden</button>
         </div>
-        <div id="copy-hint"></div>
       </div>
 
       <!-- Toning (båda lägena) -->
@@ -519,13 +558,39 @@
     }
     function r1(v) { return (Math.round(v * 10) / 10).toString(); }
     function r2(v) { return (Math.round(v * 100) / 100).toString(); }
-    document.getElementById('copy-btn').addEventListener('click', function () {
+    /* Värde-ruta: visa alla trim-värden + färdig CSV-rad. Ta en SKÄRMDUMP i fält;
+       värdena läses sedan in i foton.csv (manuellt eller via kopiera-knappen). */
+    var valuesOverlay = document.getElementById('values-overlay');
+    function openValues() {
       var p = activePhoto(); if (!p) return;
-      var row = csvRow(p), hint = document.getElementById('copy-hint');
-      function ok() { hint.textContent = '✓ Kopierad – klistra in raden i foton.csv'; }
+      document.getElementById('val-title').textContent = p.namn;
+      var rows = [
+        ['Skala (bredd)', p.bredd.toFixed(1) + ' m'],
+        ['Fram/bak (distans)', p.distans.toFixed(1) + ' m'],
+        ['Höger/vänster (sido)', p.sido.toFixed(2) + ' m'],
+        ['Upp/ned (hojd)', p.hojd.toFixed(2) + ' m'],
+        ['Sväng (rot)', p.rot.toFixed(0) + '°'],
+        ['Tilt', p.tilt.toFixed(0) + '°'],
+        ['Riktning (+HEADING_OFFSET)', (headingNudge >= 0 ? '+' : '') + headingNudge + '°']
+      ];
+      document.getElementById('val-list').innerHTML = rows.map(function (r) {
+        return '<div class="vrow"><span>' + r[0] + '</span><b>' + r[1] + '</b></div>';
+      }).join('');
+      document.getElementById('val-csv').textContent = csvRow(p);
+      document.getElementById('val-hint').textContent = '';
+      valuesOverlay.classList.remove('hidden');
+    }
+    document.getElementById('values-btn').addEventListener('click', openValues);
+    document.getElementById('val-close').addEventListener('click', function () {
+      valuesOverlay.classList.add('hidden');
+    });
+    document.getElementById('val-copy').addEventListener('click', function () {
+      var p = activePhoto(); if (!p) return;
+      var row = csvRow(p), hint = document.getElementById('val-hint');
       if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(row).then(ok).catch(function () { hint.textContent = row; });
-      } else { hint.textContent = row; }
+        navigator.clipboard.writeText(row).then(function () { hint.textContent = '✓ Kopierad'; })
+          .catch(function () { hint.textContent = 'Markera raden ovan och kopiera manuellt.'; });
+      } else { hint.textContent = 'Markera raden ovan och kopiera manuellt.'; }
       console.log('[Trim] ' + row);
     });
 

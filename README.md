@@ -67,8 +67,13 @@ matematik arbetar i WGS84 (lat/lon).
 ## Fältjustering
 
 - `HEADING_OFFSET` i `index.html` — global rättning av snedvridning (fältmäts, +medurs).
-- Vrid-knapparna ◀ ▶ — besökarens egen finjustering under visning.
-- `distans` / `bredd` / `hojd` / `rot` per foto — matcha fotot mot verkligheten.
+- Vrid-knapparna ◀ ▶ — finjustering av riktning under visning.
+- `distans` / `bredd` / `hojd` / `rot` / `sido` / `tilt` per foto — matcha fotot mot verkligheten.
+
+**Trim-flöde i fält:** öppna **🔧 Trimma**, passa in fotot, tryck **📸 Visa värden**.
+Rutan visar alla trim-värden + en färdig CSV-rad. Ta en **skärmdump** (eller kopiera raden)
+och för in värdena i `foton.csv` efteråt → ett foto trimmas bara en gång.
+Riktningsvärdet förs in i `HEADING_OFFSET`.
 
 ## Versionshantering
 
