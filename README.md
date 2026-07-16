@@ -4,6 +4,10 @@ Web-AR som lägger ett **historiskt foto** över **nuläget**, så att besökare
 jämföra då och nu på plats. Byggd på samma teknik som Kalasvärlden/Sommargatan
 (A-Frame, ingen app, ingen markördetektion) men visar fotoplan istället för 3D-modeller.
 
+**🔗 Live:** https://henkegyllen.github.io/AR_Historiska_Foton/
+
+QR-kod till sidan: [`qr_historiska_foton.png`](qr_historiska_foton.png)
+
 ## Så funkar det
 
 1. Besökaren skannar en **QR-kod** och öppnar sidan.
