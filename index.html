@@ -10,12 +10,8 @@
   <meta http-equiv="Expires" content="0">
   <title>Historiska foton – Sommargatan Växjö</title>
 
-  <!--
-    Versionshandskakning – tvingar iOS Safari att ladda senaste sidan.
-    APP_VERSION måste matcha version.json. Vid varje skarp ändring: höj BÅDA.
-  -->
   <script>
-    var APP_VERSION = '2026-07-16a';
+    var APP_VERSION = '2026-07-16b';
     (function () {
       try {
         fetch('version.json?t=' + Date.now(), { cache: 'no-store' })
@@ -36,41 +32,39 @@
     html, body { margin: 0; overflow: hidden; background: #1a1a2e; font-family: sans-serif; }
 
     #cam { object-fit: cover; pointer-events: none; background: #000; }
-    #cam.fullscreen {
-      position: fixed; inset: 0; width: 100%; height: 100%;
-      z-index: 0; border-radius: 0;
-    }
+    #cam.fullscreen { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; }
 
     #ar-scene { position: fixed !important; inset: 0 !important; z-index: 1 !important; }
     #ar-scene .a-canvas, canvas.a-canvas { pointer-events: none !important; }
 
-    /* ── Splash (fotstegs-ingången) ── */
+    /* ── Splash ── */
     #splash {
       position: fixed; inset: 0; background: #1a1a2e; color: #fff;
       display: flex; flex-direction: column; align-items: center;
-      justify-content: center; gap: 20px; z-index: 9999;
+      justify-content: center; gap: 18px; z-index: 9999;
       padding: 28px; text-align: center;
     }
     #splash h1 {
       margin: 0; font-size: 1.6rem; line-height: 1.3;
       background: linear-gradient(90deg, #ffd93d, #6bb5ff);
-      -webkit-background-clip: text; background-clip: text;
-      -webkit-text-fill-color: transparent;
+      -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
     }
     #splash .instruction { font-size: 1.05rem; color: #ffd93d; margin: 0; font-weight: bold; }
-    #splash .sub { font-size: 0.95rem; color: #cfd6ff; margin: 0; font-weight: normal; line-height: 1.5; }
+    #splash .sub { font-size: 0.95rem; color: #cfd6ff; margin: 0; line-height: 1.5; }
     .footsteps { font-size: 3rem; letter-spacing: 8px; }
-    #start-btn {
-      padding: 16px 48px; font-size: 1.2rem; font-weight: bold;
+    .entry-btns { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+    .entry-btns button {
+      padding: 15px 30px; font-size: 1.1rem; font-weight: bold;
       border: none; border-radius: 14px; color: #fff; cursor: pointer;
-      background: linear-gradient(90deg, #4a90d9, #6bb5ff);
       opacity: 0.4; pointer-events: none; transition: opacity 0.3s;
     }
-    #start-btn.enabled { opacity: 1; pointer-events: all; }
+    #btn-view { background: linear-gradient(90deg, #4a90d9, #6bb5ff); }
+    #btn-trim { background: linear-gradient(90deg, #d98a4a, #ffd93d); color: #2a2200; }
+    .entry-btns.ready button { opacity: 1; pointer-events: all; }
     #splash-status { font-size: 0.85rem; color: #9999bb; min-height: 1.2em; }
     #version-stamp { color: #26263a; font-size: 0.62rem; font-family: monospace; }
 
-    /* ── AR-läge: kontroller ── */
+    /* ── AR-kontroller (topp) ── */
     #ui-top {
       position: fixed; top: 0; left: 0; right: 0;
       display: flex; justify-content: space-between; align-items: flex-start;
@@ -80,37 +74,59 @@
       pointer-events: all; padding: 8px 16px; border: none; border-radius: 8px;
       background: rgba(0,0,0,0.6); color: #fff; font-size: 0.9rem; cursor: pointer;
     }
+    #mode-badge {
+      position: fixed; top: 12px; left: 50%; transform: translateX(-50%);
+      z-index: 1000; padding: 5px 12px; border-radius: 999px; font-size: 0.78rem;
+      background: rgba(0,0,0,0.55); color: #ffd93d; pointer-events: none;
+    }
 
-    /* Nederkant: toning + vrid-knappar (fältjustering av inpassning) */
+    /* ── Nederkant ── */
     #ui-bottom {
       position: fixed; left: 0; right: 0; bottom: 0; z-index: 1000;
-      display: flex; flex-direction: column; align-items: center; gap: 10px;
-      padding: 12px 16px calc(16px + env(safe-area-inset-bottom));
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      padding: 10px 12px calc(12px + env(safe-area-inset-bottom));
       pointer-events: none;
     }
-    #ui-bottom .row {
-      display: flex; align-items: center; gap: 12px;
-      background: rgba(0,0,0,0.55); padding: 10px 14px; border-radius: 14px;
-      pointer-events: all; -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+    .panel {
+      background: rgba(0,0,0,0.6); border-radius: 14px; padding: 10px 12px;
+      pointer-events: all; -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px);
+      color: #fff; max-width: 96vw;
     }
-    #ui-bottom label { color: #fff; font-size: 0.85rem; min-width: 3.2em; }
-    #opacity { width: 46vw; max-width: 260px; }
-    .nudge {
-      pointer-events: all; width: 44px; height: 44px; border: none; border-radius: 50%;
-      background: rgba(0,0,0,0.6); color: #fff; font-size: 1.3rem; cursor: pointer;
-    }
-    #nudge-label { color: #cfd6ff; font-size: 0.8rem; min-width: 4.5em; text-align: center; }
+    .row { display: flex; align-items: center; gap: 10px; }
+    .toning-row { display: flex; align-items: center; gap: 10px; }
+    #opacity { width: 44vw; max-width: 240px; }
+    label.lbl { font-size: 0.82rem; min-width: 3.2em; }
+
+    /* Trim-rutnät */
+    #trim-panel { display: none; width: min(94vw, 460px); }
+    #trim-panel.show { display: block; }
+    .trim-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 10px; }
+    .ctl { display: flex; align-items: center; justify-content: space-between; gap: 6px;
+           background: rgba(255,255,255,0.06); border-radius: 10px; padding: 5px 8px; }
+    .ctl .name { font-size: 0.78rem; color: #cfd6ff; flex: 1; }
+    .ctl .val  { font-size: 0.78rem; font-family: monospace; min-width: 3.4em; text-align: right; color: #ffd93d; }
+    .step { width: 34px; height: 34px; border: none; border-radius: 8px;
+            background: rgba(255,255,255,0.15); color: #fff; font-size: 1.1rem; cursor: pointer; }
+    .trim-foot { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+    #copy-btn { flex: 1; padding: 10px; border: none; border-radius: 10px; cursor: pointer;
+                background: linear-gradient(90deg, #4a90d9, #6bb5ff); color: #fff; font-weight: bold; }
+    #photo-sel { display: flex; align-items: center; gap: 8px; justify-content: center; margin-bottom: 6px; }
+    #photo-sel .step { width: 30px; height: 30px; }
+    #photo-name { font-size: 0.82rem; color: #fff; }
+    .nudge { width: 40px; height: 40px; border: none; border-radius: 50%;
+             background: rgba(255,255,255,0.15); color: #fff; font-size: 1.15rem; cursor: pointer; }
+    #nudge-label { font-size: 0.78rem; color: #cfd6ff; min-width: 3.5em; text-align: center; }
+    #copy-hint { font-size: 0.72rem; color: #9fd8a0; text-align: center; min-height: 1em; margin-top: 4px; }
 
     #error-overlay {
       position: fixed; inset: 0; background: #1a1a2e; color: #fff;
-      display: flex; flex-direction: column; align-items: center;
-      justify-content: center; gap: 16px; z-index: 99999;
-      padding: 32px; text-align: center;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 16px; z-index: 99999; padding: 32px; text-align: center;
     }
     #error-overlay h2 { color: #ff6b6b; margin: 0; }
     #error-overlay a  { color: #aaa; }
     #ios-hint {
-      position: fixed; left: 50%; bottom: 120px; transform: translateX(-50%);
+      position: fixed; left: 50%; bottom: 180px; transform: translateX(-50%);
       z-index: 1001; max-width: 86vw; text-align: center;
       background: rgba(0,0,0,0.72); color: #fff;
       font-size: 0.95rem; line-height: 1.45; padding: 12px 20px; border-radius: 12px;
@@ -142,8 +158,11 @@
     <h1>Historiska foton<br>Sommargatan</h1>
     <div class="footsteps">👣</div>
     <p class="instruction">Ställ dig med fötterna på fotstegen</p>
-    <p class="sub">Håll telefonen upp framför dig, rakt fram i fotstegens riktning. Tryck sedan Start.</p>
-    <button id="start-btn">▶ Starta</button>
+    <p class="sub">Håll telefonen upp framför dig, rakt fram i fotstegens riktning. Välj sedan hur du vill starta.</p>
+    <div class="entry-btns" id="entry-btns">
+      <button id="btn-view">👁 Titta</button>
+      <button id="btn-trim">🔧 Trimma</button>
+    </div>
     <div id="splash-status"></div>
     <div id="version-stamp"></div>
   </div>
@@ -154,23 +173,48 @@
     <a href="index.html">↺ Försök igen</a>
   </div>
 
-  <!-- domOverlay-rot för WebXR -->
   <div id="ui-overlay">
+    <div id="mode-badge" class="hidden"></div>
     <div id="ui-top" class="hidden">
       <button id="exit-btn">✕ Avsluta</button>
       <button id="recal-btn">Passa in igen ↺</button>
     </div>
 
     <div id="ui-bottom" class="hidden">
-      <div class="row">
-        <button class="nudge" id="nudge-left" aria-label="Vrid vänster">◀</button>
-        <span id="nudge-label">0°</span>
-        <button class="nudge" id="nudge-right" aria-label="Vrid höger">▶</button>
+
+      <!-- TRIM-panel (bara i trimläge) -->
+      <div id="trim-panel" class="panel">
+        <div id="photo-sel">
+          <button class="step" id="photo-prev">◀</button>
+          <span id="photo-name">–</span>
+          <button class="step" id="photo-next">▶</button>
+        </div>
+        <div class="trim-grid">
+          <div class="ctl"><span class="name">Skala</span><button class="step" data-k="bredd" data-d="-1">−</button><span class="val" id="v-bredd">–</span><button class="step" data-k="bredd" data-d="1">+</button></div>
+          <div class="ctl"><span class="name">Fram/bak</span><button class="step" data-k="distans" data-d="-1">−</button><span class="val" id="v-distans">–</span><button class="step" data-k="distans" data-d="1">+</button></div>
+          <div class="ctl"><span class="name">Höger/vänster</span><button class="step" data-k="sido" data-d="-1">−</button><span class="val" id="v-sido">–</span><button class="step" data-k="sido" data-d="1">+</button></div>
+          <div class="ctl"><span class="name">Upp/ned</span><button class="step" data-k="hojd" data-d="-1">−</button><span class="val" id="v-hojd">–</span><button class="step" data-k="hojd" data-d="1">+</button></div>
+          <div class="ctl"><span class="name">Sväng</span><button class="step" data-k="rot" data-d="-1">−</button><span class="val" id="v-rot">–</span><button class="step" data-k="rot" data-d="1">+</button></div>
+          <div class="ctl"><span class="name">Tilta</span><button class="step" data-k="tilt" data-d="-1">−</button><span class="val" id="v-tilt">–</span><button class="step" data-k="tilt" data-d="1">+</button></div>
+        </div>
+        <div class="trim-foot">
+          <button class="nudge" id="nudge-left">◀</button>
+          <span id="nudge-label">0°</span>
+          <button class="nudge" id="nudge-right">▶</button>
+          <button id="copy-btn">📋 Kopiera CSV-rad</button>
+        </div>
+        <div id="copy-hint"></div>
       </div>
-      <div class="row">
-        <label for="opacity">Toning</label>
+
+      <!-- Toning (båda lägena) -->
+      <div class="panel toning-row">
+        <span class="lbl">Toning</span>
         <input type="range" id="opacity" min="0" max="1" step="0.02" value="0.75">
+        <button class="nudge" id="nudge-left-v">◀</button>
+        <span id="nudge-label-v">0°</span>
+        <button class="nudge" id="nudge-right-v">▶</button>
       </div>
+
     </div>
   </div>
 
@@ -183,53 +227,50 @@
 
   <script>
     /*
-     * HISTORISKA FOTON — publik AR-vy.
+     * HISTORISKA FOTON — publik AR-vy med två ingångar.
      *
-     * Användaren står på två målade fotsteg (QR-koden öppnar sidan). Fotstegen
-     * ligger på FOTOGRAFENS gamla plats och pekar i FOTORIKTNINGEN, så när
-     * användaren står rätt är hen i originalkamerans nodpunkt. "Starta" låser
-     * heading ur fotstegsbäringen + telefonens gyro:
+     *   👁 Titta  – lägger historiskt foto över nuläget, toning + vrid-knappar.
+     *   🔧 Trimma – samma, men med trim-overlay för att passa in fotot:
+     *               skala, fram/bak, höger/vänster, upp/ned, sväng, tilt.
+     *               "Kopiera CSV-rad" ger värdena att klistra in i foton.csv.
+     *
+     * Fotstegen (QR öppnar sidan) står på fotografens gamla plats och pekar i
+     * fotoriktningen. "Start" låser heading ur bäringen + gyro:
      *   rotY = fotstegsbäring + gyro-yaw + HEADING_OFFSET
-     * Det historiska fotot läggs som ett halvtransparent plan framför användaren;
-     * toningsreglaget fadar mot nuläget, vrid-knapparna finjusterar inpassningen.
      *
      * Data: foton.csv, en rad per foto (2-punktslinje):
-     *   namn, lat1, lon1, lat2, lon2, elev, distans, bredd, hojd, rot
-     *   p1 (lat1,lon1) = fotografen/fotstegen (origo + ståpunkt)
-     *   p2 (lat2,lon2) = riktpunkt  → bäring = riktning p1→p2
+     *   namn,lat1,lon1,lat2,lon2,elev,distans,bredd,hojd,rot,sido,tilt
      */
-    var HEADING_OFFSET = 0;     /* fältmäts på plats som i Sommargata-projektet (+medurs) */
-    var NUDGE_STEP     = 1;     /* grader per klick på vrid-knapparna */
+    var HEADING_OFFSET = 0;     /* global rättning (+medurs); fältmäts */
+
+    /* Stegstorlekar för trim-knapparna */
+    var STEP = { bredd: 0.5, distans: 0.5, sido: 0.25, hojd: 0.25, rot: 1, tilt: 1 };
+    var NUDGE_STEP = 1;         /* heading-finjustering grader/klick */
 
     var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
                 (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
-    var photos      = [];       /* [{namn,lat1,lon1,lat2,lon2,elev,distans,bredd,hojd,rot,bearing,offset}] */
-    var origin      = null;     /* {lat,lon,elev} = första fotots p1 */
-    var baseBearing = 0;        /* fotstegsbäringen (grader) */
-    var headingBase = 0;        /* låst heading vid kalibrering (grader) */
-    var headingNudge = 0;       /* ackumulerad manuell finjustering (grader) */
-    var arActive    = false;
-    var csvLoaded   = false;
-    var camReady    = false;
-    var xrSupported = false;
-    var xrMode      = false;
+    var photos = [], origin = null, baseBearing = 0;
+    var headingBase = 0, headingNudge = 0;
+    var mode = 'view', activeIdx = 0;
+    var csvLoaded = false, camReady = false, xrSupported = false, xrMode = false;
 
-    var splash       = document.getElementById('splash');
+    var splash    = document.getElementById('splash');
     var splashStatus = document.getElementById('splash-status');
     var errorOverlay = document.getElementById('error-overlay');
-    var uiTop        = document.getElementById('ui-top');
-    var uiBottom     = document.getElementById('ui-bottom');
-    var startBtn     = document.getElementById('start-btn');
-    var exitBtn      = document.getElementById('exit-btn');
-    var recalBtn     = document.getElementById('recal-btn');
+    var entryBtns = document.getElementById('entry-btns');
+    var btnView   = document.getElementById('btn-view');
+    var btnTrim   = document.getElementById('btn-trim');
+    var modeBadge = document.getElementById('mode-badge');
+    var uiTop     = document.getElementById('ui-top');
+    var uiBottom  = document.getElementById('ui-bottom');
+    var trimPanel = document.getElementById('trim-panel');
     var opacityInput = document.getElementById('opacity');
-    var nudgeLabel   = document.getElementById('nudge-label');
-    var cam          = document.getElementById('cam');
-    var scene        = document.getElementById('ar-scene');
-    var assets       = document.getElementById('asset-manager');
-    var sceneRoot    = document.getElementById('scene-root');
-    var camEl        = document.querySelector('a-camera');
+    var cam       = document.getElementById('cam');
+    var scene     = document.getElementById('ar-scene');
+    var assets    = document.getElementById('asset-manager');
+    var sceneRoot = document.getElementById('scene-root');
+    var camEl     = document.querySelector('a-camera');
 
     (function () {
       var vs = document.getElementById('version-stamp');
@@ -254,34 +295,32 @@
         if (isNaN(lat1) || isNaN(lon1) || isNaN(lat2) || isNaN(lon2)) return;
         rows.push({
           namn: c[0], lat1: lat1, lon1: lon1, lat2: lat2, lon2: lon2,
-          elev: num(c[5]), distans: num(c[6]) || 12, bredd: num(c[7]) || 16,
-          hojd: num(c[8]) || 1.6, rot: num(c[9]) || 0
+          elev: num(c[5]),
+          distans: def(c[6], 12), bredd: def(c[7], 16), hojd: def(c[8], 1.6),
+          rot: def(c[9], 0), sido: def(c[10], 0), tilt: def(c[11], 0),
+          aspect: 0.75
         });
       });
       return rows;
     }
     function num(s) { return (s !== undefined && s !== '') ? parseFloat(s) : null; }
+    function def(s, d) { var v = num(s); return v === null || isNaN(v) ? d : v; }
 
     /* lat/lon → lokala meter relativt origo (x=öst, z=−nord) */
-    function surveyOffset(anc, lat, lon, elev) {
+    function surveyOffset(anc, lat, lon) {
       var R = 6378137;
       var dLat = (lat - anc.lat) * Math.PI / 180;
       var dLon = (lon - anc.lon) * Math.PI / 180;
       var midLat = ((lat + anc.lat) / 2) * Math.PI / 180;
-      return { x: dLon * Math.cos(midLat) * R,
-               y: (elev != null && anc.elev != null) ? (elev - anc.elev) : 0,
-               z: -dLat * R };
+      return { x: dLon * Math.cos(midLat) * R, z: -dLat * R };
     }
-
-    /* Kompassbäring (grader, 0=nord, medurs) från p1 mot p2 */
     function bearingDeg(anc, lat, lon) {
-      var o = surveyOffset(anc, lat, lon, null);
-      var north = -o.z, east = o.x;
-      var b = Math.atan2(east, north) * 180 / Math.PI;
+      var o = surveyOffset(anc, lat, lon);
+      var b = Math.atan2(o.x, -o.z) * 180 / Math.PI;   /* 0=nord, medurs */
       return (b + 360) % 360;
     }
 
-    /* ── Bygg scen: ett fotoplan per rad ── */
+    /* ── Bygg scen: wrapper (position + sväng) → a-image (tilt + skala) ── */
     function buildScene() {
       photos.forEach(function (p, idx) {
         var assetId = 'foto-asset-' + idx;
@@ -291,44 +330,52 @@
         img.setAttribute('src', 'assets/foton/' + p.namn);
         assets.appendChild(img);
 
-        /* Enhetsriktning p1→p2 i lokala planet → skjut fram planet 'distans' m */
-        var dir = surveyOffset(origin, p.lat2, p.lon2, null);
-        var len = Math.hypot(dir.x, dir.z) || 1;
-        var ux = dir.x / len, uz = dir.z / len;
-        var px = ux * p.distans, pz = uz * p.distans;
+        var wrap = document.createElement('a-entity');
+        wrap.setAttribute('id', 'wrap-' + idx);
 
         var plane = document.createElement('a-image');
         plane.setAttribute('id', 'foto-' + idx);
         plane.setAttribute('src', '#' + assetId);
-        plane.setAttribute('position', px.toFixed(3) + ' ' + p.hojd.toFixed(3) + ' ' + pz.toFixed(3));
-        plane.setAttribute('width', p.bredd);
-        plane.setAttribute('height', p.bredd * 0.75);   /* justeras till bildens format vid laddning */
-        /* Planet ska möta betraktaren vid origo: normalen pekar tillbaka längs bäringen.
-           Exakt 0/180 + ev. snedhet fältjusteras via 'rot' och vrid-knapparna. */
-        plane.setAttribute('rotation', '0 ' + (p.bearing + 180 + p.rot).toFixed(2) + ' 0');
         plane.setAttribute('material', 'shader: flat; transparent: true; opacity: ' +
                            opacityInput.value + '; side: double');
         plane.setAttribute('visible', 'false');
-
-        /* Sätt rätt bildförhållande när texturen laddats */
         plane.addEventListener('materialtextureloaded', function (e) {
           var t = e.detail && e.detail.texture && e.detail.texture.image;
-          if (t && t.width && t.height) {
-            plane.setAttribute('height', (p.bredd * t.height / t.width).toFixed(3));
-          }
+          if (t && t.width && t.height) { p.aspect = t.height / t.width; applyTransform(p); }
         });
-        sceneRoot.appendChild(plane);
-        p.el = plane;
+
+        wrap.appendChild(plane);
+        sceneRoot.appendChild(wrap);
+        p.wrap = wrap; p.el = plane;
+        applyTransform(p);
       });
+    }
+
+    /* Räkna om ett fotos placering ur dess trim-värden */
+    function applyTransform(p) {
+      if (!p.wrap) return;
+      var d = surveyOffset(origin, p.lat2, p.lon2);
+      var len = Math.hypot(d.x, d.z) || 1;
+      var ux = d.x / len, uz = d.z / len;      /* riktning framåt (mot p2) */
+      var rx = -uz, rz = ux;                    /* enhet höger (+sido) */
+      var px = ux * p.distans + rx * p.sido;
+      var pz = uz * p.distans + rz * p.sido;
+      p.wrap.setAttribute('position', px.toFixed(3) + ' ' + p.hojd.toFixed(3) + ' ' + pz.toFixed(3));
+      p.wrap.setAttribute('rotation', '0 ' + (p.bearing + 180 + p.rot).toFixed(2) + ' 0');
+      p.el.setAttribute('width', p.bredd.toFixed(3));
+      p.el.setAttribute('height', (p.bredd * p.aspect).toFixed(3));
+      p.el.setAttribute('rotation', p.tilt.toFixed(2) + ' 0 0');
+      p.el.setAttribute('material', 'opacity', parseFloat(opacityInput.value));
     }
 
     function showPhotos(show) {
       photos.forEach(function (p) { if (p.el) p.el.setAttribute('visible', show ? 'true' : 'false'); });
     }
-
     function applyHeading() {
       sceneRoot.setAttribute('rotation', '0 ' + (headingBase + headingNudge).toFixed(2) + ' 0');
-      nudgeLabel.textContent = (headingNudge >= 0 ? '+' : '') + headingNudge + '°';
+      var t = (headingNudge >= 0 ? '+' : '') + headingNudge + '°';
+      document.getElementById('nudge-label').textContent = t;
+      document.getElementById('nudge-label-v').textContent = t;
     }
 
     /* ── Laddning ── */
@@ -337,39 +384,30 @@
       .then(function (text) {
         photos = parseCSV(text);
         if (!photos.length) { showError('Inga foton i foton.csv.'); return; }
-
-        /* Origo + ståpunkt = första fotots fotografpunkt; bäring mot dess riktpunkt */
         var first = photos[0];
         origin = { lat: first.lat1, lon: first.lon1, elev: first.elev };
         baseBearing = bearingDeg(origin, first.lat2, first.lon2);
-
         photos.forEach(function (p) { p.bearing = bearingDeg(origin, p.lat2, p.lon2); });
-
         buildScene();
-        csvLoaded = true;
-        checkReady();
+        csvLoaded = true; checkReady();
       })
       .catch(function (err) { showError('Laddningsfel: ' + err.message); });
 
-    /* Kamera-förhandsvisning (behövs för gyro-fallback; ARCore tar över på Android) */
     navigator.mediaDevices.getUserMedia({
       video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
     }).then(function (stream) {
-      cam.srcObject = stream;
-      camReady = true;
-      checkReady();
+      cam.srcObject = stream; camReady = true; checkReady();
     }).catch(function () {
       splashStatus.textContent = 'Kameran nekades – tillåt kamera och ladda om sidan.';
     });
 
     function checkReady() {
-      if (csvLoaded && camReady) { startBtn.classList.add('enabled'); splashStatus.textContent = ''; }
+      if (csvLoaded && camReady) { entryBtns.classList.add('ready'); splashStatus.textContent = ''; }
     }
 
     if (navigator.xr) {
       navigator.xr.isSessionSupported('immersive-ar').then(function (ok) { xrSupported = ok; });
     }
-
     function waitForOrientation() {
       return new Promise(function (resolve) {
         var done = false;
@@ -379,23 +417,20 @@
       });
     }
 
-    /* ── Starta AR ── */
-    startBtn.addEventListener('click', async function () {
-      startBtn.classList.remove('enabled');
+    /* ── Start (delas av båda ingångarna) ── */
+    async function start(chosenMode) {
+      mode = chosenMode;
+      entryBtns.classList.remove('ready');
 
       if (xrSupported) {
-        /* WebXR (Android/ARCore): sessionens −Z = blicken vid start = fotstegsriktningen */
         xrMode = true;
-        headingNudge = 0;
-        headingBase = baseBearing + HEADING_OFFSET;
-        applyHeading();
+        headingNudge = 0; headingBase = baseBearing + HEADING_OFFSET; applyHeading();
         sceneRoot.setAttribute('position', '0 0 0');
         if (cam.srcObject) { cam.srcObject.getTracks().forEach(function (t) { t.stop(); }); cam.srcObject = null; }
         scene.enterAR();
         return;
       }
 
-      /* Fallback (iOS): embedded + gyro */
       splashStatus.textContent = 'Startar...';
       if (typeof DeviceOrientationEvent !== 'undefined' &&
           typeof DeviceOrientationEvent.requestPermission === 'function') {
@@ -408,13 +443,10 @@
       await new Promise(function (r) { requestAnimationFrame(function () { requestAnimationFrame(r); }); });
 
       var psi = camEl.object3D.rotation.y * 180 / Math.PI;
-      headingNudge = 0;
-      headingBase = baseBearing + psi + HEADING_OFFSET;
-      applyHeading();
+      headingNudge = 0; headingBase = baseBearing + psi + HEADING_OFFSET; applyHeading();
 
       document.body.appendChild(cam);
-      cam.classList.remove('hidden');
-      cam.classList.add('fullscreen');
+      cam.classList.remove('hidden'); cam.classList.add('fullscreen');
       enterArUI();
 
       if (isIOS) {
@@ -422,43 +454,88 @@
         iosHint.classList.remove('hidden');
         setTimeout(function () { iosHint.classList.add('hidden'); }, 7000);
       }
-    });
+    }
 
     function enterArUI() {
       splash.classList.add('hidden');
       uiTop.classList.remove('hidden');
       uiBottom.classList.remove('hidden');
-      arActive = true;
+      modeBadge.classList.remove('hidden');
+      if (mode === 'trim') {
+        modeBadge.textContent = '🔧 Trimläge';
+        trimPanel.classList.add('show');
+        activeIdx = 0; refreshTrim();
+      } else {
+        modeBadge.textContent = '👁 Titta';
+      }
       showPhotos(true);
     }
 
-    scene.addEventListener('enter-vr', function () {
-      if (!xrMode) return;
-      enterArUI();
-    });
-    scene.addEventListener('exit-vr', function () {
-      if (!xrMode) return;
-      window.location.reload();
-    });
+    btnView.addEventListener('click', function () { start('view'); });
+    btnTrim.addEventListener('click', function () { start('trim'); });
 
-    /* Vrid-knappar: finjustera heading (kompenserar fötter/telefon-slarv).
-       Absolut omräkning från den låsta headingBase → ingen drift. */
-    document.getElementById('nudge-left').addEventListener('click', function () {
-      headingNudge -= NUDGE_STEP; applyHeading();
-    });
-    document.getElementById('nudge-right').addEventListener('click', function () {
-      headingNudge += NUDGE_STEP; applyHeading();
-    });
+    scene.addEventListener('enter-vr', function () { if (xrMode) enterArUI(); });
+    scene.addEventListener('exit-vr', function () { if (xrMode) window.location.reload(); });
 
-    /* Toningsreglage: fada fotot mot nuläget */
-    opacityInput.addEventListener('input', function () {
-      photos.forEach(function (p) {
-        if (p.el) p.el.setAttribute('material', 'opacity', parseFloat(opacityInput.value));
+    /* ── Trim-kontroller ── */
+    function activePhoto() { return photos[activeIdx]; }
+    function refreshTrim() {
+      var p = activePhoto(); if (!p) return;
+      document.getElementById('photo-name').textContent =
+        p.namn + (photos.length > 1 ? '  (' + (activeIdx + 1) + '/' + photos.length + ')' : '');
+      document.getElementById('v-bredd').textContent   = p.bredd.toFixed(1) + ' m';
+      document.getElementById('v-distans').textContent = p.distans.toFixed(1) + ' m';
+      document.getElementById('v-sido').textContent    = p.sido.toFixed(2) + ' m';
+      document.getElementById('v-hojd').textContent    = p.hojd.toFixed(2) + ' m';
+      document.getElementById('v-rot').textContent     = p.rot.toFixed(0) + '°';
+      document.getElementById('v-tilt').textContent    = p.tilt.toFixed(0) + '°';
+    }
+    Array.prototype.forEach.call(document.querySelectorAll('.trim-grid .step'), function (btn) {
+      btn.addEventListener('click', function () {
+        var p = activePhoto(); if (!p) return;
+        var k = btn.getAttribute('data-k'), dir = parseInt(btn.getAttribute('data-d'), 10);
+        p[k] = Math.round((p[k] + dir * STEP[k]) * 1000) / 1000;
+        if (k === 'bredd') p.bredd = Math.max(0.5, p.bredd);
+        applyTransform(p); refreshTrim();
       });
     });
+    document.getElementById('photo-prev').addEventListener('click', function () {
+      activeIdx = (activeIdx - 1 + photos.length) % photos.length; refreshTrim();
+    });
+    document.getElementById('photo-next').addEventListener('click', function () {
+      activeIdx = (activeIdx + 1) % photos.length; refreshTrim();
+    });
 
-    recalBtn.addEventListener('click', function () { window.location.reload(); });
-    exitBtn.addEventListener('click', function () {
+    function csvRow(p) {
+      var e = (p.elev == null ? '' : p.elev);
+      return [p.namn, p.lat1.toFixed(13), p.lon1.toFixed(13), p.lat2.toFixed(13), p.lon2.toFixed(13),
+              e, r2(p.distans), r2(p.bredd), r2(p.hojd), r1(p.rot), r2(p.sido), r1(p.tilt)].join(',');
+    }
+    function r1(v) { return (Math.round(v * 10) / 10).toString(); }
+    function r2(v) { return (Math.round(v * 100) / 100).toString(); }
+    document.getElementById('copy-btn').addEventListener('click', function () {
+      var p = activePhoto(); if (!p) return;
+      var row = csvRow(p), hint = document.getElementById('copy-hint');
+      function ok() { hint.textContent = '✓ Kopierad – klistra in raden i foton.csv'; }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(row).then(ok).catch(function () { hint.textContent = row; });
+      } else { hint.textContent = row; }
+      console.log('[Trim] ' + row);
+    });
+
+    /* ── Heading-nudge (båda lägena, två knappuppsättningar) ── */
+    function nudge(dir) { headingNudge += dir * NUDGE_STEP; applyHeading(); }
+    document.getElementById('nudge-left').addEventListener('click', function () { nudge(-1); });
+    document.getElementById('nudge-right').addEventListener('click', function () { nudge(1); });
+    document.getElementById('nudge-left-v').addEventListener('click', function () { nudge(-1); });
+    document.getElementById('nudge-right-v').addEventListener('click', function () { nudge(1); });
+
+    opacityInput.addEventListener('input', function () {
+      photos.forEach(function (p) { if (p.el) p.el.setAttribute('material', 'opacity', parseFloat(opacityInput.value)); });
+    });
+
+    document.getElementById('recal-btn').addEventListener('click', function () { window.location.reload(); });
+    document.getElementById('exit-btn').addEventListener('click', function () {
       if (cam.srcObject) cam.srcObject.getTracks().forEach(function (t) { t.stop(); });
       window.location.reload();
     });

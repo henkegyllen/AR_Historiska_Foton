@@ -28,13 +28,14 @@ REPO = os.path.abspath(os.path.join(HERE, ".."))
 FOTON_DIR = os.path.join(REPO, "assets", "foton")
 CSV_PATH = os.path.join(REPO, "assets", "foton.csv")
 MAXPIX = 1600
-DEFAULTS = {"elev": "", "distans": "12", "bredd": "16", "hojd": "1.6", "rot": "0"}
+DEFAULTS = {"elev": "", "distans": "12", "bredd": "16", "hojd": "1.6",
+            "rot": "0", "sido": "0", "tilt": "0"}
 
 HEADER = ("# AR Historiska Foton – Sommargatan\n"
           "# Genererad av tools/sync_from_featureserver.py. Manuella trim-värden\n"
-          "# (distans/bredd/hojd/rot/elev) bevaras per bildnamn vid ny synk.\n"
+          "# (distans/bredd/hojd/rot/sido/tilt/elev) bevaras per bildnamn vid ny synk.\n"
           "# Första raden = origo + fotstegsbäring för hela vyn.\n"
-          "namn,lat1,lon1,lat2,lon2,elev,distans,bredd,hojd,rot\n")
+          "namn,lat1,lon1,lat2,lon2,elev,distans,bredd,hojd,rot,sido,tilt\n")
 
 
 def load_config():
@@ -81,7 +82,9 @@ def load_existing_tuning():
             if c[0].lower() in ("namn", "name") or len(c) < 10:
                 continue
             keep[c[0]] = {"elev": c[5], "distans": c[6], "bredd": c[7],
-                          "hojd": c[8], "rot": c[9]}
+                          "hojd": c[8], "rot": c[9],
+                          "sido": c[10] if len(c) > 10 else "0",
+                          "tilt": c[11] if len(c) > 11 else "0"}
     return keep
 
 
@@ -109,6 +112,9 @@ def main():
         os.makedirs(FOTON_DIR)
     tuning = load_existing_tuning()
 
+    # Lagret lagras i SWEREF 99 15 00 (EPSG:3007). outSR=4326 gör att servern
+    # omprojicerar geometrin till WGS84 (lon/lat i grader), vilket appens
+    # surveyOffset förutsätter. Rör inte outSR utan att ändra appens matematik.
     q = api(base + "/%d/query" % layer,
             {"where": "1=1", "outFields": "*", "returnGeometry": "true",
              "outSR": "4326", "orderByFields": "objectid"}, tok)
@@ -152,7 +158,8 @@ def main():
 
         t = tuning.get(namn, DEFAULTS)
         rows.append([namn, "%.13f" % p1[1], "%.13f" % p1[0], "%.13f" % p2[1], "%.13f" % p2[0],
-                     t["elev"], t["distans"], t["bredd"], t["hojd"], t["rot"]])
+                     t["elev"], t["distans"], t["bredd"], t["hojd"], t["rot"],
+                     t.get("sido", "0"), t.get("tilt", "0")])
 
     with open(CSV_PATH, "w", encoding="utf-8", newline="\n") as f:
         f.write(HEADER)

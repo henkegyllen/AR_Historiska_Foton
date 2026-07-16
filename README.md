@@ -54,6 +54,10 @@ ArcGIS Pro:s medföljande Python (propy) medan du är inloggad mot din portal.
 Filnamn tas från fältet **`bildfil`** i tjänsten om det finns (rekommenderas –
 då styr ni namnet), annars media-id ur `foto_referens`.
 
+Linjelagret lagras i **SWEREF 99 15 00** (EPSG:3007). Sync-skriptet begär
+`outSR=4326` så att servern omprojicerar till **WGS84** – `foton.csv` och appens
+matematik arbetar i WGS84 (lat/lon).
+
 ## Fältjustering
 
 - `HEADING_OFFSET` i `index.html` — global rättning av snedvridning (fältmäts, +medurs).
