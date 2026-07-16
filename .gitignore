@@ -15,3 +15,7 @@ tools/sync.config.json
 
 # Temp
 *.tmp
+
+# Python
+__pycache__/
+*.pyc
