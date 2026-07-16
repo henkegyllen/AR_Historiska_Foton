@@ -1,0 +1,5 @@
+{
+  "_kommentar": "Kopiera denna fil till sync.config.json och fyll i din egen FeatureServer-URL. sync.config.json är gitignorerad och hamnar aldrig i repot.",
+  "featureServerUrl": "https://<din-gis-server>/server/rest/services/<mapp>/<tjanst>/FeatureServer",
+  "layerId": 0
+}

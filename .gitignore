@@ -1,0 +1,17 @@
+# OS / editor
+Thumbs.db
+Desktop.ini
+.DS_Store
+*.swp
+
+# Lokal konfiguration – serveradresser/tjänststruktur får INTE i repot
+tools/sync.config.json
+
+# ArcGIS / GIS-arbetsfiler (hör inte hemma i webb-repot)
+*.lock
+*.gdb/
+*.aprx
+*.atbx
+
+# Temp
+*.tmp

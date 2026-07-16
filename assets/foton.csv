@@ -1,0 +1,18 @@
+# AR Historiska Foton – Sommargatan
+# En rad per historiskt foto. Varje foto = en 2-punktslinje ur linjelagret.
+# Genereras normalt av tools/sync_from_featureserver.py — manuella trim-värden
+# (distans/bredd/hojd/rot) bevaras vid ny synk.
+#
+#   namn    – bildfil i assets/foton/
+#   lat1,lon1 – FOTOGRAFENS plats = där fotstegen målas (origo + ståpunkt)
+#   lat2,lon2 – riktpunkt: dit kameran pekade → bäring = riktning p1→p2
+#   elev    – markhöjd vid fotstegen (m). Valfri.
+#   distans – hur långt fram (m) fotoplanet skjuts längs bäringen. Default 12.
+#   bredd   – fotoplanets bredd i m (höjd räknas ur bildens format). Default 16.
+#   hojd    – planets centrumhöjd (m) över marken. Default 1.6 (ögonhöjd).
+#   rot     – extra grader på planet (fältjustering). Default 0.
+#
+# Den FÖRSTA raden definierar origo + fotstegsbäring för hela vyn.
+#
+namn,lat1,lon1,lat2,lon2,elev,distans,bredd,hojd,rot
+YNAN0225.jpg,56.87789225993938,14.805083384369784,56.877898760425204,14.806207282791421,,12,14,2.0,0
