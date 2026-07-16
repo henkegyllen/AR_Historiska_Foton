@@ -11,7 +11,7 @@
   <title>Historiska foton – Sommargatan Växjö</title>
 
   <script>
-    var APP_VERSION = '2026-07-16b';
+    var APP_VERSION = '2026-07-16c';
     (function () {
       try {
         fetch('version.json?t=' + Date.now(), { cache: 'no-store' })
@@ -64,9 +64,14 @@
     #splash-status { font-size: 0.85rem; color: #9999bb; min-height: 1.2em; }
     #version-stamp { color: #26263a; font-size: 0.62rem; font-family: monospace; }
 
+    /* domOverlay-rot: MÅSTE vara ett fast helskärmselement, annars kollapsar
+       WebXR DOM-overlay och kontrollerna syns inte på Android. Barnen ligger
+       'absolute' relativt denna rot (fixed-barn placeras fel i DOM-overlay). */
+    #ui-overlay { position: fixed; inset: 0; z-index: 1000; pointer-events: none; }
+
     /* ── AR-kontroller (topp) ── */
     #ui-top {
-      position: fixed; top: 0; left: 0; right: 0;
+      position: absolute; top: 0; left: 0; right: 0;
       display: flex; justify-content: space-between; align-items: flex-start;
       padding: 12px 16px; pointer-events: none; z-index: 1000;
     }
@@ -75,17 +80,18 @@
       background: rgba(0,0,0,0.6); color: #fff; font-size: 0.9rem; cursor: pointer;
     }
     #mode-badge {
-      position: fixed; top: 12px; left: 50%; transform: translateX(-50%);
+      position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
       z-index: 1000; padding: 5px 12px; border-radius: 999px; font-size: 0.78rem;
       background: rgba(0,0,0,0.55); color: #ffd93d; pointer-events: none;
     }
 
     /* ── Nederkant ── */
     #ui-bottom {
-      position: fixed; left: 0; right: 0; bottom: 0; z-index: 1000;
+      position: absolute; left: 0; right: 0; bottom: 0; z-index: 1000;
       display: flex; flex-direction: column; align-items: center; gap: 8px;
       padding: 10px 12px calc(12px + env(safe-area-inset-bottom));
       pointer-events: none;
+      max-height: 100%; overflow-y: auto;   /* klipp aldrig bort kontroller på små skärmar */
     }
     .panel {
       background: rgba(0,0,0,0.6); border-radius: 14px; padding: 10px 12px;
