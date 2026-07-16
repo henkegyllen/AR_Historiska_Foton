@@ -1,4 +1,6 @@
-# AR Historiska Foton – Sommargatan Växjö
+# AR Historiska Foton – Växjö kommun.
+
+En prov och försöks verksamhet av GIS-enheten på Växjö kommun.
 
 Web-AR som lägger ett **historiskt foto** över **nuläget**, så att besökaren kan
 jämföra då och nu på plats. Byggd på samma teknik som Kalasvärlden/Sommargatan
