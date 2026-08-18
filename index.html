@@ -11,7 +11,7 @@
   <title>Historiska foton – Sommargatan Växjö</title>
 
   <script>
-    var APP_VERSION = '2026-08-18b';
+    var APP_VERSION = '2026-08-18c';
     (function () {
       try {
         fetch('version.json?t=' + Date.now(), { cache: 'no-store' })
@@ -147,7 +147,7 @@
 
     /* Värde-ruta (skärmdumpsvänlig) */
     #values-overlay {
-      position: fixed; inset: 0; z-index: 5000; background: rgba(10,10,25,0.93);
+      position: fixed; inset: 0; z-index: 5000; background: #0a0a19;
       display: flex; align-items: center; justify-content: center; padding: 20px;
     }
     .vcard {
@@ -258,7 +258,7 @@
           <button class="nudge" id="nudge-left">◀</button>
           <span id="nudge-label">0°</span>
           <button class="nudge" id="nudge-right">▶</button>
-          <button id="values-btn">📸 Visa värden</button>
+          <button id="values-btn">Visa värden</button>
         </div>
       </div>
 
