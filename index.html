@@ -11,7 +11,7 @@
   <title>Historiska foton – Sommargatan Växjö</title>
 
   <script>
-    var APP_VERSION = '2026-08-18a';
+    var APP_VERSION = '2026-08-18b';
     (function () {
       try {
         fetch('version.json?t=' + Date.now(), { cache: 'no-store' })
@@ -106,7 +106,13 @@
     /* Trim-rutnät */
     #trim-panel { display: none; width: min(94vw, 460px); }
     #trim-panel.show { display: block; }
-    .trim-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 10px; }
+    .trim-grid { grid-template-columns: 1fr; gap: 6px; }
+    .trim-page { display: none; }
+    .trim-page.show { display: grid; }
+    #trim-page-toggle {
+      margin-top: 8px; width: 100%; padding: 8px; border: none; border-radius: 10px;
+      background: rgba(255,255,255,0.12); color: #cfd6ff; font-size: 0.85rem; cursor: pointer;
+    }
     .ctl { display: flex; align-items: center; justify-content: space-between; gap: 6px;
            background: rgba(255,255,255,0.06); border-radius: 10px; padding: 5px 8px; }
     .ctl .name { font-size: 0.78rem; color: #cfd6ff; flex: 1; }
@@ -235,14 +241,19 @@
           <span id="photo-name">–</span>
           <button class="step" id="photo-next">▶</button>
         </div>
-        <div class="trim-grid">
+        <!-- Sida 1: Placering & skala -->
+        <div class="trim-grid trim-page show" id="trim-page-1">
           <div class="ctl"><span class="name">Skala</span><button class="step" data-k="bredd" data-d="-1">−</button><span class="val" id="v-bredd">–</span><button class="step" data-k="bredd" data-d="1">+</button></div>
           <div class="ctl"><span class="name">Fram/bak</span><button class="step" data-k="distans" data-d="-1">−</button><span class="val" id="v-distans">–</span><button class="step" data-k="distans" data-d="1">+</button></div>
           <div class="ctl"><span class="name">Höger/vänster</span><button class="step" data-k="sido" data-d="-1">−</button><span class="val" id="v-sido">–</span><button class="step" data-k="sido" data-d="1">+</button></div>
           <div class="ctl"><span class="name">Upp/ned</span><button class="step" data-k="hojd" data-d="-1">−</button><span class="val" id="v-hojd">–</span><button class="step" data-k="hojd" data-d="1">+</button></div>
+        </div>
+        <!-- Sida 2: Rotation -->
+        <div class="trim-grid trim-page" id="trim-page-2">
           <div class="ctl"><span class="name">Sväng</span><button class="step" data-k="rot" data-d="-1">−</button><span class="val" id="v-rot">–</span><button class="step" data-k="rot" data-d="1">+</button></div>
           <div class="ctl"><span class="name">Tilta</span><button class="step" data-k="tilt" data-d="-1">−</button><span class="val" id="v-tilt">–</span><button class="step" data-k="tilt" data-d="1">+</button></div>
         </div>
+        <button id="trim-page-toggle">Rotation ›</button>
         <div class="trim-foot">
           <button class="nudge" id="nudge-left">◀</button>
           <span id="nudge-label">0°</span>
@@ -509,7 +520,7 @@
       if (mode === 'trim') {
         modeBadge.textContent = '🔧 Trimläge';
         trimPanel.classList.add('show');
-        activeIdx = 0; refreshTrim();
+        activeIdx = 0; refreshTrim(); showTrimPage(0);
       } else {
         modeBadge.textContent = '👁 Titta';
       }
@@ -549,6 +560,20 @@
     });
     document.getElementById('photo-next').addEventListener('click', function () {
       activeIdx = (activeIdx + 1) % photos.length; refreshTrim();
+    });
+
+    /* Trim-panelen delas på två sidor (Placering & skala / Rotation) så inget
+       klipps i bredd. Växlingsknappen flippar mellan dem. */
+    var trimPages = [document.getElementById('trim-page-1'), document.getElementById('trim-page-2')];
+    var trimPageToggle = document.getElementById('trim-page-toggle');
+    function showTrimPage(i) {
+      trimPages[0].classList.toggle('show', i === 0);
+      trimPages[1].classList.toggle('show', i === 1);
+      trimPageToggle.textContent = i === 0 ? 'Rotation ›' : '‹ Placering & skala';
+      trimPageToggle.setAttribute('data-page', i);
+    }
+    trimPageToggle.addEventListener('click', function () {
+      showTrimPage(this.getAttribute('data-page') === '1' ? 0 : 1);
     });
 
     function csvRow(p) {
