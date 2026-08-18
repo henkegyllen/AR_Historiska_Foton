@@ -11,7 +11,7 @@
   <title>Historiska foton – Sommargatan Växjö</title>
 
   <script>
-    var APP_VERSION = '2026-07-16d';
+    var APP_VERSION = '2026-08-18a';
     (function () {
       try {
         fetch('version.json?t=' + Date.now(), { cache: 'no-store' })
@@ -171,7 +171,7 @@
   <a-scene
     id="ar-scene"
     embedded
-    webxr="requiredFeatures: local-floor; optionalFeatures: dom-overlay; domOverlay: #ui-overlay"
+    webxr="requiredFeatures: local-floor; optionalFeatures: dom-overlay; overlayElement: #ui-overlay"
     renderer="antialias: true; alpha: true; colorManagement: true"
     background="transparent: true"
     vr-mode-ui="enabled: false"

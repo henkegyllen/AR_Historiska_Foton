@@ -13,7 +13,7 @@ QR-kod till sidan: [`qr_historiska_foton.png`](qr_historiska_foton.png)
 ## Så funkar det
 
 1. Besökaren skannar en **QR-kod** och öppnar sidan.
-2. Hen ställer sig med fötterna på **två målade fotsteg** på marken. Fotstegen
+2. Användaren ställer sig med fötterna på **två målade fotsteg** på marken. Fotstegen
    ligger på fotografens gamla plats och pekar i fotoriktningen.
 3. "Starta" låser riktningen ur fotstegsbäringen + telefonens gyro:
    `rotY = fotstegsbäring + gyro-yaw + HEADING_OFFSET`
