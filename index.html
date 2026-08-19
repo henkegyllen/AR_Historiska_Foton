@@ -11,7 +11,7 @@
   <title>Historiska foton – Sommargatan Växjö</title>
 
   <script>
-    var APP_VERSION = '2026-08-18c';
+    var APP_VERSION = '2026-08-19a';
     (function () {
       try {
         fetch('version.json?t=' + Date.now(), { cache: 'no-store' })
@@ -154,7 +154,8 @@
       background: #14142a; color: #fff; border: 1px solid #3a3a5c; border-radius: 16px;
       padding: 20px; width: 420px; max-width: 92vw; max-height: 88vh; overflow-y: auto;
     }
-    .vcard h3 { margin: 0 0 12px; font-size: 1.1rem; color: #ffd93d; word-break: break-all; }
+    .vcard h3 { margin: 0 0 4px; font-size: 1.1rem; color: #ffd93d; word-break: break-all; }
+    .vtime { font-size: 0.85rem; color: #cfd6ff; margin: 0 0 12px; font-family: monospace; }
     .vrow { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0;
             border-bottom: 1px solid rgba(255,255,255,0.08); font-size: 1.05rem; }
     .vrow b { color: #6bb5ff; font-family: monospace; }
@@ -213,6 +214,7 @@
   <div id="values-overlay" class="hidden">
     <div class="vcard">
       <h3 id="val-title">–</h3>
+      <div id="val-time" class="vtime">–</div>
       <div id="val-list"></div>
       <p class="vnote">Riktningsvärdet läggs till <code>HEADING_OFFSET</code>. Övriga värden = CSV-raden nedan.</p>
       <div class="vcsv-label">CSV-rad till foton.csv:</div>
@@ -589,6 +591,11 @@
     function openValues() {
       var p = activePhoto(); if (!p) return;
       document.getElementById('val-title').textContent = p.namn;
+      var now = new Date();
+      function pad(n) { return (n < 10 ? '0' : '') + n; }
+      document.getElementById('val-time').textContent = '🕓 ' +
+        now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate()) +
+        ' ' + pad(now.getHours()) + ':' + pad(now.getMinutes());
       var rows = [
         ['Skala (bredd)', p.bredd.toFixed(1) + ' m'],
         ['Fram/bak (distans)', p.distans.toFixed(1) + ' m'],
