@@ -11,7 +11,7 @@
   <title>Historiska foton – Sommargatan Växjö</title>
 
   <script>
-    var APP_VERSION = '2026-08-19a';
+    var APP_VERSION = '2026-08-19b';
     (function () {
       try {
         fetch('version.json?t=' + Date.now(), { cache: 'no-store' })
@@ -146,8 +146,10 @@
     #ios-hint small { color: #ffd93d; font-size: 0.8rem; }
 
     /* Värde-ruta (skärmdumpsvänlig) */
+    /* Ligger INUTI #ui-overlay (DOM-overlay-roten) så den syns i AR. Måste vara
+       'absolute' (fixed-barn placeras fel i DOM-overlay) och klickbar. */
     #values-overlay {
-      position: fixed; inset: 0; z-index: 5000; background: #0a0a19;
+      position: absolute; inset: 0; z-index: 5000; background: #0a0a19; pointer-events: auto;
       display: flex; align-items: center; justify-content: center; padding: 20px;
     }
     .vcard {
@@ -210,23 +212,6 @@
     <a href="index.html">↺ Försök igen</a>
   </div>
 
-  <!-- Värde-ruta: ta en SKÄRMDUMP av denna i fält, värdena läses in i foton.csv sedan -->
-  <div id="values-overlay" class="hidden">
-    <div class="vcard">
-      <h3 id="val-title">–</h3>
-      <div id="val-time" class="vtime">–</div>
-      <div id="val-list"></div>
-      <p class="vnote">Riktningsvärdet läggs till <code>HEADING_OFFSET</code>. Övriga värden = CSV-raden nedan.</p>
-      <div class="vcsv-label">CSV-rad till foton.csv:</div>
-      <pre id="val-csv"></pre>
-      <div class="vbtns">
-        <button id="val-copy">📋 Kopiera</button>
-        <button id="val-close">Stäng</button>
-      </div>
-      <div id="val-hint"></div>
-    </div>
-  </div>
-
   <div id="ui-overlay">
     <div id="mode-badge" class="hidden"></div>
     <div id="ui-top" class="hidden">
@@ -273,6 +258,24 @@
         <button class="nudge" id="nudge-right-v">▶</button>
       </div>
 
+    </div>
+
+    <!-- Värde-ruta: ta en SKÄRMDUMP av denna i fält, värdena läses in i foton.csv sedan.
+         MÅSTE ligga inuti #ui-overlay, annars syns den inte i WebXR-AR. -->
+    <div id="values-overlay" class="hidden">
+      <div class="vcard">
+        <h3 id="val-title">–</h3>
+        <div id="val-time" class="vtime">–</div>
+        <div id="val-list"></div>
+        <p class="vnote">Riktningsvärdet läggs till <code>HEADING_OFFSET</code>. Övriga värden = CSV-raden nedan.</p>
+        <div class="vcsv-label">CSV-rad till foton.csv:</div>
+        <pre id="val-csv"></pre>
+        <div class="vbtns">
+          <button id="val-copy">📋 Kopiera</button>
+          <button id="val-close">Stäng</button>
+        </div>
+        <div id="val-hint"></div>
+      </div>
     </div>
   </div>
 
